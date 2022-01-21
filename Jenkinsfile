@@ -28,7 +28,7 @@ pipeline {
         stage('Push to registry') {
             steps {
                 script {
-                    ecr_repo_uri ="${ORG_ACCOUNT_NUM}.dkr.ecr.${region}.amazonaws.com/${image_label}" 
+                    ecr_repo_uri ="https://${ORG_ACCOUNT_NUM}.dkr.ecr.${region}.amazonaws.com/${image_label}"
                     docker.withRegistry(ecr_repo_uri, "ecr:$region:ecr-creds") {
                         image.push("$commit")
                         image.push('latest')
