@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    image = docker.build(image_label, "reverse-proxy")
+                    image = docker.build(image_label)
                 }
             }
         }
@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry(API_GATEWAY_ECR_URI_AB, "ecr:$region:ecr-creds") {
-                        //image.push("$git_commit_hash")
+                        image.push("$git_commit_hash")
                         image.push('latest')
                     }
                 }
