@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        image_label = "ab-api-gateway"
+        image_label = "reverse-proxy-ab"
         git_commit_hash = "${sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD')}"
         image = ""
     }
@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    image = docker.build(image_label, "api-gateway")
+                    image = docker.build(image_label, "reverse-proxy")
                 }
             }
         }
