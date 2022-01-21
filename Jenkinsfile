@@ -37,7 +37,7 @@ pipeline {
     }
     post {
         cleanup {
-            if built {
+            if(built) {
                 sh "docker rmi $image_label"
             }
         }
