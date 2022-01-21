@@ -20,7 +20,13 @@ pipeline {
         stage('Push to registry') {
             steps {
                 script {
-                    docker.withRegistry(API_GATEWAY_ECR_URI_AB, "ecr:$region:ecr-creds") {
+                    docker.withRegistry(
+                      ORG_ACCOUNT_NUM
+                        + ".dkr.ecr."
+                        + region
+                        + ".amazonaws.com/reverse-proxy-ab",
+                      "ecr:$region:ecr-creds"
+                    ) {
                         image.push("$commit")
                         image.push('latest')
                     }
