@@ -5,8 +5,8 @@ pipeline {
     environment {
         image_label = "reverse-proxy-ab"
         commit = sh(returnStdout: true, script: "git rev-parse --short=8 HEAD").trim()
-        image = ""
-        ecr_repo_uri ="${ORG_ACCOUNT_NUM}.dkr.ecr.${region}.amazonaws.com/reverse-proxy-ab" 
+        image = null
+        built = false
     }
 
     stages {
@@ -17,10 +17,8 @@ pipeline {
                 }
             }
             post {
-                cleanup {
-                    sh "docker rmi $image_label"
-                    sh "docker rmi $ecr_repo_uri:latest"
-                    sh "docker rmi $ecr_repo_uri:$commit"
+                success {
+                    built = true
                 }
             }
         }
@@ -28,11 +26,19 @@ pipeline {
         stage('Push to registry') {
             steps {
                 script {
+                    ecr_repo_uri ="${ORG_ACCOUNT_NUM}.dkr.ecr.${region}.amazonaws.com/${image_label}" 
                     docker.withRegistry(ecr_repo_uri, "ecr:$region:ecr-creds") {
                         image.push("$commit")
                         image.push('latest')
                     }
                 }
+            }
+        }
+    }
+    post {
+        cleanup {
+            if built {
+                sh "docker rmi $image_label"
             }
         }
     }
