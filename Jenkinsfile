@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         image_label = "reverse-proxy-ab"
-        git_commit_hash = "${sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD')}"
+        commit = sh(returnStdout: true, script: "git rev-parse --short=8 HEAD").trim()
         image = ""
     }
 
@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry(API_GATEWAY_ECR_URI_AB, "ecr:$region:ecr-creds") {
-                        image.push("$git_commit_hash")
+                        image.push("$commit")
                         image.push('latest')
                     }
                 }
