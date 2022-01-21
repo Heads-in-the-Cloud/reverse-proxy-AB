@@ -18,7 +18,9 @@ pipeline {
             }
             post {
                 success {
-                    built = true
+                    script {
+                        built = true
+                    }
                 }
             }
         }
@@ -37,8 +39,10 @@ pipeline {
     }
     post {
         cleanup {
-            if(built) {
-                sh "docker rmi $image_label"
+            script {
+                if(built) {
+                    sh "docker rmi $image_label"
+                }
             }
         }
     }
