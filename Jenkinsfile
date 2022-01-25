@@ -19,6 +19,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    sh 'docker context use default'
                     image = docker.build(image_label)
                 }
             }
