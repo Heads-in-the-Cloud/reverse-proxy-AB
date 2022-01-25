@@ -3,9 +3,15 @@ pipeline {
     agent any
 
     environment {
-        image_label = "reverse-proxy-ab"
-        commit = sh(returnStdout: true, script: "git rev-parse --short=8 HEAD").trim()
+        COMMIT_HASH = sh(returnStdout: true, script: "git rev-parse --short=8 HEAD").trim()
+        AWS_REGION = sh(script:'aws configure get region', returnStdout: true).trim()
+        AWS_ACCOUNT_ID = sh(script:'aws sts get-caller-identity --query "Account" --output text', returnStdout: true).trim()
+        ECR_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        PROJECT_ID  = "AB"
+
+        image_label = "reverse-proxy-${PROJECT_ID.toLowerCase()}"
         image = null
+        packaged = false
         built = false
     }
 
@@ -16,6 +22,7 @@ pipeline {
                     image = docker.build(image_label)
                 }
             }
+
             post {
                 success {
                     script {
@@ -28,20 +35,25 @@ pipeline {
         stage('Push to registry') {
             steps {
                 script {
-                    ecr_repo_uri ="https://${ORG_ACCOUNT_NUM}.dkr.ecr.${region}.amazonaws.com/${image_label}"
-                    docker.withRegistry(ecr_repo_uri, "ecr:$region:ecr-creds") {
-                        image.push("$commit")
+                    docker.withRegistry(
+                        "http://$ECR_URI/$image_label",
+                        "ecr:$AWS_REGION:jenkins"
+                    ) {
+                        image.push("$COMMIT_HASH")
                         image.push('latest')
                     }
                 }
             }
         }
     }
+
     post {
         cleanup {
             script {
-                if(built) {
-                    sh "docker rmi $image_label"
+                if(packaged) {
+                    if(built) {
+                        sh "docker rmi $image_label"
+                    }
                 }
             }
         }
