@@ -25,7 +25,7 @@ pipeline {
         ).trim()
 
         ecr_uri = "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
-        image_label = "reverse-proxy-${params.ProjectId.toLowerCase()}"
+        image_label = "${params.ProjectId.toLowerCase()}-reverse-proxy"
         image = null
         built = false
     }
